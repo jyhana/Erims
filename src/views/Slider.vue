@@ -59,6 +59,7 @@
   </div>
 </template>
 <script>
+import { _slider } from '../utils/Slider.js'
 export default {
   name: 'slider',
   data() {
@@ -70,79 +71,14 @@ export default {
       gamma: 0,
     }
   },
+  mounted() {
+    this.init();
+  },
   methods: {
-    onready(Cesium) {
-      //初始化viewer部件
-      var viewer = new Cesium.Viewer('cesiumContainer');
-      viewer.imageryLayers.addImageryProvider(new Cesium.BingMapsImageryProvider({
-        url: 'https://dev.virtualearth.net',
-        mapStyle: Cesium.BingMapsStyle.AERIAL,
-        key: URL_CONFIG.BING_MAP_KEY
-      }));
-      var scene = viewer.scene;
-      var widget = viewer.cesiumWidget;
-      var sceneLayer;
-      $('#loadingbar').remove();
-
-      try {
-        var promise = scene.open(URL_CONFIG.SCENE_SUOFEIYA);
-        Cesium.when(promise, function (layers) {
-          var layer = scene.layers.find('Config');
-          sceneLayer = layer;
-          //设置相机位置，定位至模型
-          scene.camera.setView({
-            //将经度、纬度、高度的坐标转换为笛卡尔坐标
-            destination: new Cesium.Cartesian3(-2653915.6463913363, 3571045.726807149, 4570293.566342328),
-            orientation: {
-              heading: 2.1953426301495345,
-              pitch: -0.33632707158103625,
-              roll: 6.283185307179586
-            }
-          });
-        }, function () {
-          var title = '加载SCP失败，请检查网络连接状态或者url地址是否正确？';
-          widget.showErrorPanel(title, undefined, e);
-        });
-      }
-      catch (e) {
-        if (widget._showRenderLoopErrors) {
-          var title = '渲染时发生错误，已停止渲染。';
-          widget.showErrorPanel(title, undefined, e);
-        }
-      }
-      $("#toolbar").show();
-      // The viewModel tracks the state of our mini application.
-      var viewModel = {
-        brightness: 1,
-        contrast: 1,
-        hue: 0,
-        saturation: 1,
-        gamma: 1
-      };
-      // Convert the viewModel members into knockout observables.
-      Cesium.knockout.track(viewModel);
-      // Bind the viewModel to the DOM elements of the UI that call for it.
-      var toolbar = document.getElementById('toolbar');
-      Cesium.knockout.applyBindings(viewModel, toolbar);
-
-      // Make the active imagery layer a subscriber of the viewModel.
-      function subscribeLayerParameter(name) {
-        Cesium.knockout.getObservable(viewModel, name).subscribe(
-          function (newValue) {
-            var layer = sceneLayer;
-            layer[name] = parseFloat(newValue);
-            //sceneLayers[0].refresh();
-          }
-        );
-      }
-      subscribeLayerParameter('brightness');
-      subscribeLayerParameter('contrast');
-      subscribeLayerParameter('hue');
-      subscribeLayerParameter('saturation');
-      subscribeLayerParameter('gamma');
+    init() {
+      _slider();
     },
   }
-
 }
 </script>
 <style scoped>
@@ -156,11 +92,11 @@ export default {
   z-index: 100;
   display: none; */
   position: absolute;
-    top: 20vh;
-    left: 4vw;
-    width: 50vh;
-    height: 50vh;
-    background: #c4c4c483;
+    top: 15vh;
+    right: 2vw;
+    width: 35vh;
+    height: 35vh;
+    /* background: #ffffff; */
     border-radius: 10px;
     overflow-x: hidden;
     overflow-y: auto;

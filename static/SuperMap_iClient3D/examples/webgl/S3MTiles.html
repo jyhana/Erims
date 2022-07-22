@@ -1,119 +1,164 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
-    <title>属性查询</title>
+    <title>倾斜模型</title>
     <link href="../../Build/Cesium/Widgets/widgets.css" rel="stylesheet">
     <link href="./css/pretty.css" rel="stylesheet">
     <script src="./js/jquery.min.js"></script>
     <script src="./js/config.js"></script>
+    <script src="./js/slider.js"></script>
     <script type="text/javascript" src="../../Build/Cesium/Cesium.js"></script>
+    <style>
+        #toolbar input {
+            vertical-align: middle;
+            padding-top: 2px;
+            padding-bottom: 2px;
+            margin: 10px 0px;
+            width: 150px;
+            ;
+        }
+    </style>
 </head>
+
 <body>
-<div id="cesiumContainer"></div>
-<div id='loadingbar' class="spinner">
-    <div class="spinner-container container1">
-        <div class="circle1"></div>
-        <div class="circle2"></div>
-        <div class="circle3"></div>
-        <div class="circle4"></div>
+    <div id="cesiumContainer"></div>
+    <div id="toolbar" class="param-container tool-bar">
+        <table>
+            <tbody>
+                <tr>
+                    <td>亮度</td>
+                    <td>
+                        <input type="range" min="0" max="2" step="0.02" data-bind="value: brightness, valueUpdate: 'input'">
+                    </td>
+                </tr>
+                <tr>
+                    <td>对比度</td>
+                    <td>
+                        <input type="range" min="0" max="2" step="0.02" data-bind="value: contrast, valueUpdate: 'input'">
+                    </td>
+                </tr>
+                <tr>
+                    <td>色调</td>
+                    <td>
+                        <input type="range" min="-1" max="1" step="0.02" data-bind="value: hue, valueUpdate: 'input'">
+                    </td>
+                </tr>
+                <tr>
+                    <td>饱和度</td>
+                    <td>
+                        <input type="range" min="0" max="2" step="0.02" data-bind="value: saturation, valueUpdate: 'input'">
+                    </td>
+                </tr>
+                <tr>
+                    <td>伽马</td>
+                    <td>
+                        <input type="range" min="0" max="2" step="0.02" data-bind="value: gamma, valueUpdate: 'input'">
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-    <div class="spinner-container container2">
-        <div class="circle1"></div>
-        <div class="circle2"></div>
-        <div class="circle3"></div>
-        <div class="circle4"></div>
+    <div id='loadingbar' class="spinner">
+        <div class="spinner-container container1">
+            <div class="circle1"></div>
+            <div class="circle2"></div>
+            <div class="circle3"></div>
+            <div class="circle4"></div>
+        </div>
+        <div class="spinner-container container2">
+            <div class="circle1"></div>
+            <div class="circle2"></div>
+            <div class="circle3"></div>
+            <div class="circle4"></div>
+        </div>
+        <div class="spinner-container container3">
+            <div class="circle1"></div>
+            <div class="circle2"></div>
+            <div class="circle3"></div>
+            <div class="circle4"></div>
+        </div>
     </div>
-    <div class="spinner-container container3">
-        <div class="circle1"></div>
-        <div class="circle2"></div>
-        <div class="circle3"></div>
-        <div class="circle4"></div>
-    </div>
-</div>
-<blockquote id="bubble" class="bubble">
-        <img id="myimg" src="./images/home_banner.jpg" width="50%" height="auto">
-        <h2 id="title"></h2>
-        <p id="des" class="word"></p>
-        <audio controls="controls">
-          <source src="./media/song.mp3" type="audio/mpeg" />
-            Your browser does not support the audio tag.
-        </audio>
-</blockquote>
-<script type="text/javascript">
-    function onload(Cesium) {
-        var infoboxContainer = document.getElementById("bubble");
-        //初始化viewer部件
-        var viewer = new Cesium.Viewer('cesiumContainer');
-        viewer.imageryLayers.addImageryProvider(new Cesium.BingMapsImageryProvider({
-            url : 'https://dev.virtualearth.net',
-            mapStyle : Cesium.BingMapsStyle.AERIAL,
-            key : URL_CONFIG.BING_MAP_KEY
-        }));
-        viewer.customInfobox = infoboxContainer;
-        var scene = viewer.scene;
-        var canvas = scene.canvas;
-        var widget = viewer.cesiumWidget;
-        $('#loadingbar').remove();
-        try {
-            //添加S3M图层服务
-            var promise = scene.open(URL_CONFIG.SCENE_JINJIANG);
-            Cesium.when(promise, function (layers) {
-                if(!scene.pickPositionSupported){
-                    alert('不支持深度拾取,属性查询功能无法使用！');
-                }
-                var layer = scene.layers.find('jinjiang');
-                //设置属性查询参数
-                layer.setQueryParameter({
-                    url: 'http://www.supermapol.com/realspace/services/data-jinjiang/rest/data',
-                    dataSourceName: 'jinjiang',
-                    dataSetName: 'test',
-                    keyWord: 'SmID'
-                });
-                //设置相机视角
-               scene.camera.setView({
-                    //将经度、纬度、高度的坐标转换为笛卡尔坐标
-                    destination : new Cesium.Cartesian3(-2767302.844416157,5085941.49155452,2675759.1559041184),
-                    orientation : {
-                        heading : 4.7793869967010565,
-                        pitch : -0.5899023527373464,
-                        roll : 8.539835505416704e-12
-                    }
-                });
+    <script type="text/javascript">
+        function onload(Cesium) {
+            //初始化viewer部件
+            var viewer = new Cesium.Viewer('cesiumContainer');
+            viewer.imageryLayers.addImageryProvider(new Cesium.BingMapsImageryProvider({
+                url: 'https://dev.virtualearth.net',
+                mapStyle: Cesium.BingMapsStyle.AERIAL,
+                key: URL_CONFIG.BING_MAP_KEY
+            }));
+            var scene = viewer.scene;
+            var widget = viewer.cesiumWidget;
+            var sceneLayer;
+            $('#loadingbar').remove();
 
-
-            }, function (e) {
+            try {
+                // var promise = scene.open(URL_CONFIG.SCENE_SUOFEIYA);
+                // var promise = scene.open('http://localhost:9090/iserver/services/3D-Idata/rest/realspace');
+                // var promise = scene.open('http://localhost:9090/iserver/services/3D-Idata/rest/realspace');
+                Cesium.when(promise, function(layers) {
+                    var layer = scene.layers.find('Combine');
+                    sceneLayer = layer;
+                    //设置相机位置，定位至模型
+                    scene.camera.setView({
+                        //将经度、纬度、高度的坐标转换为笛卡尔坐标
+                        destination: new Cesium.Cartesian3.fromDegrees(99.25, 27.54, 10000),
+                        orientation: {
+                            heading: 2.1953426301495345,
+                            pitch: -0.33632707158103625,
+                            roll: 6.283185307179586
+                        }
+                    });
+                }, function() {
+                    var title = '加载SCP失败，请检查网络连接状态或者url地址是否正确？';
+                    widget.showErrorPanel(title, undefined, e);
+                });
+            } catch (e) {
                 if (widget._showRenderLoopErrors) {
                     var title = '渲染时发生错误，已停止渲染。';
                     widget.showErrorPanel(title, undefined, e);
                 }
-            });
-        }
-        catch (e) {
-            if (widget._showRenderLoopErrors) {
-                var title = '渲染时发生错误，已停止渲染。';
-                widget.showErrorPanel(title, undefined, e);
             }
+            $("#toolbar").show();
+            // The viewModel tracks the state of our mini application.
+            var viewModel = {
+                brightness: 1,
+                contrast: 1,
+                hue: 0,
+                saturation: 1,
+                gamma: 1
+            };
+            // Convert the viewModel members into knockout observables.
+            Cesium.knockout.track(viewModel);
+            // Bind the viewModel to the DOM elements of the UI that call for it.
+            var toolbar = document.getElementById('toolbar');
+            Cesium.knockout.applyBindings(viewModel, toolbar);
+
+            // Make the active imagery layer a subscriber of the viewModel.
+            function subscribeLayerParameter(name) {
+                Cesium.knockout.getObservable(viewModel, name).subscribe(
+                    function(newValue) {
+                        var layer = sceneLayer;
+                        layer[name] = parseFloat(newValue);
+                        //sceneLayers[0].refresh();
+                    }
+                );
+            }
+            subscribeLayerParameter('brightness');
+            subscribeLayerParameter('contrast');
+            subscribeLayerParameter('hue');
+            subscribeLayerParameter('saturation');
+            subscribeLayerParameter('gamma');
         }
-        //添加自定义infobox
-        var title = document.getElementById("title");
-        var des = document.getElementById("des");
-        var myimg = document.getElementById("myimg");
-        //注册鼠标点击事件
-        viewer.pickEvent.addEventListener(function(feature){
-            var title = Cesium.defaultValue(feature.NAME,'');
-            var description = Cesium.defaultValue(feature.DES,'');
-            title.innerText = title;
-            des.innerText = description;
-            myimg.src = "./images/" + title + ".jpg";
-        });
-    }
-    if (typeof Cesium !== 'undefined') {
-        window.startupCalled = true;
-        onload(Cesium);
-    }
-</script>
+        if (typeof Cesium !== 'undefined') {
+            window.startupCalled = true;
+            onload(Cesium);
+        }
+    </script>
 </body>
+
 </html>
